@@ -4,7 +4,7 @@
 
 ---
 
-![GUI Screenshot](gui.png)
+![GUI Screenshot](GUI.PNG)
 
 ---
 
