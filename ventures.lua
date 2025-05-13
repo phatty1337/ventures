@@ -1,6 +1,6 @@
 addon.name    = 'ventures';
 addon.author  = 'Commandobill';
-addon.version = '1.0';
+addon.version = '1.1';
 addon.desc    = 'Capture and parse EXP Areas cleanly from !ventures response';
 
 require('common');
@@ -17,6 +17,9 @@ local header_detected = false;
 
 local parsed_exp_areas = {}; -- GUI display
 local last_alerted_completion = {}; -- Tracks last alert per area
+
+local zoning = false;
+local zone_loaded = false;
 
 -- Settings
 local settings = {
@@ -138,7 +141,6 @@ end
 local function send_ventures_command()
     local zone_id = AshitaCore:GetMemoryManager():GetParty():GetMemberZone(0);
     if zone_id == 0 then
-        print(chat.header(addon.name) .. chat.error('Zoning detected. Skipping !ventures for now.'));
         return;
     end
 
@@ -230,6 +232,26 @@ ashita.events.register('text_in', 'ventures_textin_cb', function(e)
     if #capture_lines >= max_lines then
         capture_active = false;
         parse_exp_areas(capture_lines);
+    end
+end);
+
+ashita.events.register('packet_in', 'packet_in_cb', function(e)
+    local id = e.id;
+
+    -- Zone enter packet
+    if id == 0x0A then
+        zoning = true;
+        zone_loaded = false;
+        return;
+    end
+
+    -- Wait for first 0x001F packet after zoning starts
+    if zoning and not zone_loaded and id == 0x001F then
+        zone_loaded = true;
+        zoning = false;
+        auto_refresh_timer = os.clock();
+        send_ventures_command();
+        return;
     end
 end);
 
