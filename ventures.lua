@@ -1,11 +1,12 @@
 addon.name    = 'ventures';
 addon.author  = 'Commandobill';
-addon.version = '1.1';
+addon.version = '1.2.3';
 addon.desc    = 'Capture and parse EXP Areas cleanly from !ventures response';
 
 require('common');
 local chat = require('chat');
 local imgui = require('imgui');
+local vnm_data = require('vnms');
 
 -- Runtime state
 local capture_active = false;
@@ -20,6 +21,7 @@ local last_alerted_completion = {}; -- Tracks last alert per area
 
 local zoning = false;
 local zone_loaded = false;
+local zone_entry_time = 0;
 
 -- Settings
 local settings = {
@@ -60,6 +62,19 @@ local function parse_exp_areas(lines)
         local level_range = part:match("%((%d+%-%d+)%)");
         local completion = part:match("@(%d+)%%");
         local area = part:gsub("%(.-%)", ""):gsub("@%d+%%", ""):gsub("^%s*(.-)%s*$", "%1");
+        local vnm_position = nil;
+        local vnm_zone = vnm_data[area];
+
+        if vnm_zone then
+            for _, vnm in ipairs(vnm_zone) do
+                if vnm.level_range == level_range then
+                    vnm_position = vnm.position;
+                    break;
+                end
+            end
+        end
+
+
 
         if level_range and area then
             local completion_str = completion or '0';
@@ -68,15 +83,17 @@ local function parse_exp_areas(lines)
             table.insert(parsed_exp_areas, {
                 level_range = level_range,
                 area = area,
-                completion = completion_str
+                completion = completion_str,
+                loc = vnm_position and string.format("(%s)", vnm_position) or ""
             });
 
             -- Check and alert if needed
             if settings.enable_alerts and completion_num > settings.alert_threshold then
                 local last = last_alerted_completion[area] or 0;
                 if completion_num > last then
+                    local location_note = vnm_position and string.format(" at (%s)", vnm_position) or "";
                     print(chat.header(addon.name) .. chat.success(
-                        string.format("%s is now %d%% complete!", area, completion_num)
+                        string.format("%s is now %d%% complete%s!", area, completion_num, location_note)
                     ));
                     last_alerted_completion[area] = completion_num;
                 end
@@ -91,7 +108,7 @@ local function draw_gui()
         return;
     end
 
-    imgui.SetNextWindowSize({ 600, 350 }, ImGuiCond_FirstUseEver);
+    imgui.SetNextWindowSize({ 700, 350 }, ImGuiCond_FirstUseEver);
     if imgui.Begin('Goblin Ventures') then
         -- Set window styles
         imgui.PushStyleColor(ImGuiCol_WindowBg, {0,0.06,0.16,0.9});
@@ -99,13 +116,14 @@ local function draw_gui()
         imgui.PushStyleColor(ImGuiCol_TitleBgActive, {0,0.06,0.16,0.9});
         imgui.PushStyleColor(ImGuiCol_TitleBgCollapsed, {0,0.06,0.16,0.5});
 
-        imgui.Columns(3);
+        imgui.Columns(4);
         imgui.SetColumnWidth(0, 120);   -- Level Range
         imgui.SetColumnWidth(1, 220);   -- Area
 
         imgui.Text('Level Range'); imgui.NextColumn();
         imgui.Text('Area'); imgui.NextColumn();
         imgui.Text('Completion'); imgui.NextColumn();
+        imgui.Text('Loc'); imgui.NextColumn();
         imgui.Separator();
 
         for _, entry in ipairs(parsed_exp_areas) do
@@ -127,7 +145,12 @@ local function draw_gui()
             end
 
             imgui.TextUnformatted(entry.completion .. '%');
+
             imgui.PopStyleColor(); -- Pop completion %
+            imgui.NextColumn();
+
+            -- Loc (white)
+            imgui.Text(entry.loc);
             imgui.NextColumn();
         end
 
@@ -242,6 +265,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
     if id == 0x0A then
         zoning = true;
         zone_loaded = false;
+        zone_entry_time = os.clock();
         return;
     end
 
@@ -249,8 +273,8 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
     if zoning and not zone_loaded and id == 0x001F then
         zone_loaded = true;
         zoning = false;
-        auto_refresh_timer = os.clock();
-        send_ventures_command();
+        auto_refresh_timer = os.clock() - settings.auto_refresh_interval + 5;
+        --send_ventures_command();
         return;
     end
 end);
@@ -258,6 +282,14 @@ end);
 -- GUI + auto-refresh manager
 ashita.events.register('d3d_present', 'ventures_present_cb', function()
     draw_gui();
+
+    if zoning and not zone_loaded and os.clock() - zone_entry_time > 30 then
+        zoning = false;
+        zone_loaded = true;
+        print(chat.header(addon.name) .. chat.warning('Fallback: Zone timer expired. Proceeding.'));
+        send_ventures_command();
+        return;
+    end
 
     if (os.clock() - auto_refresh_timer) >= settings.auto_refresh_interval then
         auto_refresh_timer = os.clock();
