@@ -213,7 +213,7 @@ return {
             ["crest"] = "Ocean Crest",
         },
     },
-    ["The Sanctuary of Zi'Tah"] = {
+    ["The Sanctuary of ZiTah"] = {
         {
             ["name"] = "?",
             ["level_range"] = "30-39",
