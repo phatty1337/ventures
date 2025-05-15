@@ -235,7 +235,7 @@ return {
             ["crest"] = "Forest Crest",
         },
     },
-    ["Crawlers' Nest"] = {
+    ["Crawlers Nest"] = {
         {
             ["name"] = "Monarch Crawler",
             ["level_range"] = "40-49",
