@@ -35,7 +35,7 @@ local auto_refresh_timer = os.clock(); -- Initialize timer
 
 -- Helper: Parse and store EXP Areas
 local function parse_exp_areas(lines)
-    parsed_exp_areas = {}; -- Clear old results
+    
     local exp_text = '';
     local found_exp_start = false;
 
@@ -55,6 +55,7 @@ local function parse_exp_areas(lines)
         print(chat.header(addon.name) .. chat.error('EXP Areas section not found.'));
         return;
     end
+    parsed_exp_areas = {}; -- Clear old results
 
     exp_text = exp_text:gsub("^EXP Areas:%s*", "");
 
