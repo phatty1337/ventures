@@ -27,11 +27,18 @@ local zone_entry_time = 0;
 local settings = {
     show_gui = true,
     enable_alerts = true,
+    enable_audio = true,
     alert_threshold = 90,
+    audio_alert_threshold = 100,
     auto_refresh_interval = 60 -- seconds
 };
 
 local auto_refresh_timer = os.clock(); -- Initialize timer
+
+local function play_alert_sound(sound)
+    local fullpath = string.format('%s\\sounds\\%s', addon.path, sound);
+    ashita.misc.play_sound(fullpath);
+end
 
 -- Helper: Parse and store EXP Areas
 local function parse_exp_areas(lines)
@@ -96,6 +103,10 @@ local function parse_exp_areas(lines)
                     print(chat.header(addon.name) .. chat.success(
                         string.format("%s is now %d%% complete%s!", area, completion_num, location_note)
                     ));
+                    -- Play audio alert if enabled
+                    if settings.enable_audio and completion_num >= settings.audio_alert_threshold then
+                        play_alert_sound('alert.wav');
+                    end
                     last_alerted_completion[area] = completion_num;
                 end
             end
@@ -193,6 +204,7 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
                 print(chat.header(addon.name) .. chat.message('Current Settings:'));
                 print(chat.header(addon.name) .. ('- GUI: ' .. (settings.show_gui and 'ON' or 'OFF')));
                 print(chat.header(addon.name) .. ('- Alerts: ' .. (settings.enable_alerts and 'ON' or 'OFF')));
+                print(chat.header(addon.name) .. ('- Audio: ' .. (settings.enable_audio and 'ON' or 'OFF')));
             else
                 local setting = args[3]:lower();
                 if setting == 'gui' then
@@ -201,6 +213,9 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
                 elseif setting == 'alerts' then
                     settings.enable_alerts = not settings.enable_alerts;
                     print(chat.header(addon.name) .. chat.message('Alerts toggled ' .. (settings.enable_alerts and 'ON' or 'OFF')));
+                elseif setting == 'audio' then
+                    settings.enable_audio = not settings.enable_audio;
+                    print(chat.header(addon.name) .. chat.message('Audio alerts toggled ' .. (settings.enable_audio and 'ON' or 'OFF')));
                 else
                     print(chat.header(addon.name) .. chat.error('Unknown settings option: ' .. setting));
                 end
