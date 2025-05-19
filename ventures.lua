@@ -116,15 +116,16 @@ local function draw_gui()
         imgui.PushStyleColor(ImGuiCol_TitleBgActive, {0,0.06,0.16,0.9});
         imgui.PushStyleColor(ImGuiCol_TitleBgCollapsed, {0,0.06,0.16,0.5});
 
-        imgui.Columns(4);
-        imgui.SetColumnWidth(0, 120);   -- Level Range
-        imgui.SetColumnWidth(1, 220);   -- Area
+        imgui.Columns(4)
+        imgui.Text('Level Range'); imgui.NextColumn()
+        imgui.Text('Area'); imgui.NextColumn()
+        imgui.Text('Completion'); imgui.NextColumn()
+        imgui.Text('Loc'); imgui.NextColumn()
+        imgui.Separator()
 
-        imgui.Text('Level Range'); imgui.NextColumn();
-        imgui.Text('Area'); imgui.NextColumn();
-        imgui.Text('Completion'); imgui.NextColumn();
-        imgui.Text('Loc'); imgui.NextColumn();
-        imgui.Separator();
+        imgui.SetColumnWidth(0, 120)    -- Level Range
+        imgui.SetColumnWidth(1, 220)    -- Area
+        -- ... set other column widths if needed ...
 
         for _, entry in ipairs(parsed_exp_areas) do
             imgui.PushStyleColor(ImGuiCol_Text, { 1.0, 1.0, 1.0, 1.0 });
