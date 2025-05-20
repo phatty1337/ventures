@@ -1,12 +1,13 @@
 addon.name    = 'ventures';
 addon.author  = 'Commandobill';
-addon.version = '1.2.5';
+addon.version = '1.2.6';
 addon.desc    = 'Capture and parse EXP Areas cleanly from !ventures response';
 
 require('common');
 local chat = require('chat');
 local imgui = require('imgui');
 local vnm_data = require('vnms');
+local settings = require('config');
 
 -- Runtime state
 local capture_active = false;
@@ -22,18 +23,6 @@ local last_alerted_completion = {}; -- Tracks last alert per area
 local zoning = false;
 local zone_loaded = false;
 local zone_entry_time = 0;
-
--- Settings
-local settings = {
-    show_gui = true,
-    enable_alerts = true,
-    enable_audio = false,
-    alert_threshold = 90,
-    audio_alert_threshold = 100,
-    auto_refresh_interval = 60, -- seconds
-    sort_by = 'completion', -- 'level', 'area', 'completion'
-    sort_ascending = false
-};
 
 local auto_refresh_timer = os.clock(); -- Initialize timer
 
