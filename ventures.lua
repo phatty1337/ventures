@@ -219,7 +219,15 @@ local function draw_gui()
         end
         imgui.NextColumn();
 
-        imgui.Text('Location');
+        -- Location header with hyperlink style
+        imgui.Text('Location ');  -- Regular text
+        imgui.SameLine(0, 0);  -- Keep on same line with no spacing
+        imgui.PushStyleColor(ImGuiCol_Text, {0.0, 0.7, 1.0, 1.0});  -- Light blue color for link
+        if imgui.Selectable('(wiki)', false, ImGuiSelectableFlags_None, {0, 0}) then
+            -- Open URL in default browser
+            os.execute('start https://www.bg-wiki.com/ffxi/CatsEyeXI_Content/Ventures#Venture_Bosses');
+        end
+        imgui.PopStyleColor();
         imgui.NextColumn();
         imgui.Separator();
 
@@ -246,7 +254,6 @@ local function draw_gui()
             imgui.PopStyleColor(); -- Pop completion %
             imgui.NextColumn();
 
-            -- Loc (white)
             imgui.Text(entry.loc);
             imgui.NextColumn();
         end
