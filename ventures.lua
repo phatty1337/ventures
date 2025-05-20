@@ -123,10 +123,6 @@ local function draw_gui()
         imgui.Text('Loc'); imgui.NextColumn()
         imgui.Separator()
 
-        imgui.SetColumnWidth(0, 120)    -- Level Range
-        imgui.SetColumnWidth(1, 220)    -- Area
-        -- ... set other column widths if needed ...
-
         for _, entry in ipairs(parsed_exp_areas) do
             imgui.PushStyleColor(ImGuiCol_Text, { 1.0, 1.0, 1.0, 1.0 });
             -- Level Range (white)
