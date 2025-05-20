@@ -1,6 +1,6 @@
 addon.name    = 'ventures';
 addon.author  = 'Commandobill';
-addon.version = '1.2.3';
+addon.version = '1.2.5';
 addon.desc    = 'Capture and parse EXP Areas cleanly from !ventures response';
 
 require('common');
@@ -27,15 +27,47 @@ local zone_entry_time = 0;
 local settings = {
     show_gui = true,
     enable_alerts = true,
+    enable_audio = false,
     alert_threshold = 90,
-    auto_refresh_interval = 60 -- seconds
+    audio_alert_threshold = 100,
+    auto_refresh_interval = 60, -- seconds
+    sort_by = 'completion', -- 'level', 'area', 'completion'
+    sort_ascending = false
 };
 
 local auto_refresh_timer = os.clock(); -- Initialize timer
 
+local function play_alert_sound(sound)
+    local fullpath = string.format('%s\\sounds\\%s', addon.path, sound);
+    ashita.misc.play_sound(fullpath);
+end
+
+local function sort_exp_areas()
+    table.sort(parsed_exp_areas, function(a, b)
+        local a_val, b_val;
+
+        if settings.sort_by == 'level' then
+            a_val = tonumber(a.level_range:match("(%d+)-")) or 0;
+            b_val = tonumber(b.level_range:match("(%d+)-")) or 0;
+        elseif settings.sort_by == 'area' then
+            a_val = a.area:lower();
+            b_val = b.area:lower();
+        elseif settings.sort_by == 'completion' then
+            a_val = tonumber(a.completion) or 0;
+            b_val = tonumber(b.completion) or 0;
+        end
+
+        if settings.sort_ascending then
+            return a_val < b_val;
+        else
+            return a_val > b_val;
+        end
+    end);
+end
+
 -- Helper: Parse and store EXP Areas
 local function parse_exp_areas(lines)
-    parsed_exp_areas = {}; -- Clear old results
+    
     local exp_text = '';
     local found_exp_start = false;
 
@@ -55,6 +87,7 @@ local function parse_exp_areas(lines)
         print(chat.header(addon.name) .. chat.error('EXP Areas section not found.'));
         return;
     end
+    parsed_exp_areas = {}; -- Clear old results
 
     exp_text = exp_text:gsub("^EXP Areas:%s*", "");
 
@@ -74,8 +107,6 @@ local function parse_exp_areas(lines)
             end
         end
 
-
-
         if level_range and area then
             local completion_str = completion or '0';
             local completion_num = tonumber(completion_str) or 0;
@@ -86,7 +117,6 @@ local function parse_exp_areas(lines)
                 completion = completion_str,
                 loc = vnm_position and string.format("(%s)", vnm_position) or ""
             });
-
             -- Check and alert if needed
             if settings.enable_alerts and completion_num > settings.alert_threshold then
                 local last = last_alerted_completion[area] or 0;
@@ -95,11 +125,18 @@ local function parse_exp_areas(lines)
                     print(chat.header(addon.name) .. chat.success(
                         string.format("%s is now %d%% complete%s!", area, completion_num, location_note)
                     ));
+                    -- Play audio alert if enabled
+                    if settings.enable_audio and completion_num >= settings.audio_alert_threshold then
+                        play_alert_sound('alert.wav');
+                    end
                     last_alerted_completion[area] = completion_num;
                 end
             end
         end
     end
+
+    -- Sort the entries according to current settings
+    sort_exp_areas();
 end
 
 -- Draw the GUI window
@@ -116,12 +153,88 @@ local function draw_gui()
         imgui.PushStyleColor(ImGuiCol_TitleBgActive, {0,0.06,0.16,0.9});
         imgui.PushStyleColor(ImGuiCol_TitleBgCollapsed, {0,0.06,0.16,0.5});
 
+
         imgui.Columns(4)
         imgui.Text('Level Range'); imgui.NextColumn()
         imgui.Text('Area'); imgui.NextColumn()
         imgui.Text('Completion'); imgui.NextColumn()
         imgui.Text('Loc'); imgui.NextColumn()
         imgui.Separator()
+
+        imgui.Columns(4);
+
+        -- Level Range button
+        if settings.sort_by == 'level' then
+            imgui.PushStyleColor(ImGuiCol_Button, {0.2, 0.4, 0.8, 1.0});  -- Blue highlight for active sort
+            imgui.PushStyleColor(ImGuiCol_ButtonHovered, {0.2, 0.4, 0.8, 1.0});  -- Same blue for hover
+            imgui.PushStyleColor(ImGuiCol_ButtonActive, {0.2, 0.4, 0.8, 1.0});  -- Same blue for clicked
+        end
+        if imgui.Button('Level Range' .. (settings.sort_by == 'level' and (settings.sort_ascending and ' (Asc)' or ' (Desc)') or '')) then
+            if settings.sort_by == 'level' then
+                settings.sort_ascending = not settings.sort_ascending;
+            else
+                settings.sort_by = 'level';
+                settings.sort_ascending = true;
+            end
+            sort_exp_areas();
+        end
+        if settings.sort_by == 'level' then
+            imgui.PopStyleColor(3);  -- Pop all three colors
+        end
+        imgui.NextColumn();
+
+        -- Area button
+        if settings.sort_by == 'area' then
+            imgui.PushStyleColor(ImGuiCol_Button, {0.2, 0.4, 0.8, 1.0});  -- Blue highlight for active sort
+            imgui.PushStyleColor(ImGuiCol_ButtonHovered, {0.2, 0.4, 0.8, 1.0});  -- Same blue for hover
+            imgui.PushStyleColor(ImGuiCol_ButtonActive, {0.2, 0.4, 0.8, 1.0});  -- Same blue for clicked
+        end
+        if imgui.Button('Area' .. (settings.sort_by == 'area' and (settings.sort_ascending and ' (Asc)' or ' (Desc)') or '')) then
+            if settings.sort_by == 'area' then
+                settings.sort_ascending = not settings.sort_ascending;
+            else
+                settings.sort_by = 'area';
+                settings.sort_ascending = true;
+            end
+            sort_exp_areas();
+        end
+        if settings.sort_by == 'area' then
+            imgui.PopStyleColor(3);  -- Pop all three colors
+        end
+        imgui.NextColumn();
+
+        -- Completion button
+        if settings.sort_by == 'completion' then
+            imgui.PushStyleColor(ImGuiCol_Button, {0.2, 0.4, 0.8, 1.0});  -- Blue highlight for active sort
+            imgui.PushStyleColor(ImGuiCol_ButtonHovered, {0.2, 0.4, 0.8, 1.0});  -- Same blue for hover
+            imgui.PushStyleColor(ImGuiCol_ButtonActive, {0.2, 0.4, 0.8, 1.0});  -- Same blue for clicked
+        end
+        if imgui.Button('Completion' .. (settings.sort_by == 'completion' and (settings.sort_ascending and ' (Asc)' or ' (Desc)') or '')) then
+            if settings.sort_by == 'completion' then
+                settings.sort_ascending = not settings.sort_ascending;
+            else
+                settings.sort_by = 'completion';
+                settings.sort_ascending = true;
+            end
+            sort_exp_areas();
+        end
+        if settings.sort_by == 'completion' then
+            imgui.PopStyleColor(3);  -- Pop all three colors
+        end
+        imgui.NextColumn();
+
+        -- Location header with hyperlink style
+        imgui.Text('Location ');  -- Regular text
+        imgui.SameLine(0, 0);  -- Keep on same line with no spacing
+        imgui.PushStyleColor(ImGuiCol_Text, {0.0, 0.7, 1.0, 1.0});  -- Light blue color for link
+        if imgui.Selectable('(wiki)', false, ImGuiSelectableFlags_None, {0, 0}) then
+            -- Open URL in default browser
+            os.execute('start https://www.bg-wiki.com/ffxi/CatsEyeXI_Content/Ventures#Venture_Bosses');
+        end
+        imgui.PopStyleColor();
+        imgui.NextColumn();
+        imgui.Separator();
+
 
         for _, entry in ipairs(parsed_exp_areas) do
             imgui.PushStyleColor(ImGuiCol_Text, { 1.0, 1.0, 1.0, 1.0 });
@@ -146,7 +259,6 @@ local function draw_gui()
             imgui.PopStyleColor(); -- Pop completion %
             imgui.NextColumn();
 
-            -- Loc (white)
             imgui.Text(entry.loc);
             imgui.NextColumn();
         end
@@ -189,6 +301,8 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
                 print(chat.header(addon.name) .. chat.message('Current Settings:'));
                 print(chat.header(addon.name) .. ('- GUI: ' .. (settings.show_gui and 'ON' or 'OFF')));
                 print(chat.header(addon.name) .. ('- Alerts: ' .. (settings.enable_alerts and 'ON' or 'OFF')));
+                print(chat.header(addon.name) .. ('- Audio: ' .. (settings.enable_audio and 'ON' or 'OFF')));
+                print(chat.header(addon.name) .. ('- Sort: ' .. settings.sort_by .. ' ' .. (settings.sort_ascending and 'Ascending' or 'Descending')));
             else
                 local setting = args[3]:lower();
                 if setting == 'gui' then
@@ -197,6 +311,9 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
                 elseif setting == 'alerts' then
                     settings.enable_alerts = not settings.enable_alerts;
                     print(chat.header(addon.name) .. chat.message('Alerts toggled ' .. (settings.enable_alerts and 'ON' or 'OFF')));
+                elseif setting == 'audio' then
+                    settings.enable_audio = not settings.enable_audio;
+                    print(chat.header(addon.name) .. chat.message('Audio alerts toggled ' .. (settings.enable_audio and 'ON' or 'OFF')));
                 else
                     print(chat.header(addon.name) .. chat.error('Unknown settings option: ' .. setting));
                 end
