@@ -289,7 +289,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
     if zoning and not zone_loaded and id == 0x001F then
         zone_loaded = true;
         zoning = false;
-        auto_refresh_timer = os.clock() - settings.auto_refresh_interval + 5;
+        auto_refresh_timer = os.clock() - settings.auto_refresh_interval + 10;
         --send_ventures_command();
         return;
     end
