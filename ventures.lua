@@ -153,11 +153,15 @@ local function draw_gui()
         imgui.PushStyleColor(ImGuiCol_TitleBgActive, {0,0.06,0.16,0.9});
         imgui.PushStyleColor(ImGuiCol_TitleBgCollapsed, {0,0.06,0.16,0.5});
 
+
+        imgui.Columns(4)
+        imgui.Text('Level Range'); imgui.NextColumn()
+        imgui.Text('Area'); imgui.NextColumn()
+        imgui.Text('Completion'); imgui.NextColumn()
+        imgui.Text('Loc'); imgui.NextColumn()
+        imgui.Separator()
+
         imgui.Columns(4);
-        imgui.SetColumnWidth(0, 180);   -- Level Range
-        imgui.SetColumnWidth(1, 220);   -- Area
-        imgui.SetColumnWidth(2, 175 );  -- Completion
-        imgui.SetColumnWidth(3, 180);   -- Location
 
         -- Level Range button
         if settings.sort_by == 'level' then
@@ -230,6 +234,7 @@ local function draw_gui()
         imgui.PopStyleColor();
         imgui.NextColumn();
         imgui.Separator();
+
 
         for _, entry in ipairs(parsed_exp_areas) do
             imgui.PushStyleColor(ImGuiCol_Text, { 1.0, 1.0, 1.0, 1.0 });
