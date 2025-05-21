@@ -142,14 +142,6 @@ local function draw_gui()
         imgui.PushStyleColor(ImGuiCol_TitleBgActive, {0,0.06,0.16,0.9});
         imgui.PushStyleColor(ImGuiCol_TitleBgCollapsed, {0,0.06,0.16,0.5});
 
-
-        imgui.Columns(4)
-        imgui.Text('Level Range'); imgui.NextColumn()
-        imgui.Text('Area'); imgui.NextColumn()
-        imgui.Text('Completion'); imgui.NextColumn()
-        imgui.Text('Loc'); imgui.NextColumn()
-        imgui.Separator()
-
         imgui.Columns(4);
 
         -- Level Range button
