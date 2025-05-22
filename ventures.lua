@@ -26,6 +26,11 @@ local zone_entry_time = 0;
 
 local auto_refresh_timer = os.clock(); -- Initialize timer
 
+local window = T{
+    is_open = true,
+    is_minimized = false,
+};
+
 local function play_alert_sound(sound)
     local fullpath = string.format('%s\\sounds\\%s', addon.path, sound);
     ashita.misc.play_sound(fullpath);
@@ -134,8 +139,32 @@ local function draw_gui()
         return;
     end
 
+    -- Find highest completion percentage
+    local highest_completion = 0;
+    local highest_area = '';
+    local highest_position = '';
+    for _, entry in ipairs(parsed_exp_areas) do
+        local completion = tonumber(entry.completion) or 0;
+        if completion > highest_completion then
+            highest_completion = completion;
+            highest_area = entry.area;
+            highest_position = entry.loc;
+        end
+    end
+
+    -- Create dynamic window title
+    local window_title;
+    if window.is_minimized and highest_completion > 0 then
+        window_title = string.format('Goblin Ventures - %s%s: %d%%###ventures_window', 
+            highest_area, 
+            highest_position ~= '' and ' ' .. highest_position or '',
+            highest_completion);
+    else
+        window_title = 'Goblin Ventures###ventures_window';
+    end
+
     imgui.SetNextWindowSize({ 700, 350 }, ImGuiCond_FirstUseEver);
-    if imgui.Begin('Goblin Ventures') then
+    if imgui.Begin(window_title, window.is_open) then
         -- Set window styles
         imgui.PushStyleColor(ImGuiCol_WindowBg, {0,0.06,0.16,0.9});
         imgui.PushStyleColor(ImGuiCol_TitleBg, {0,0.06,0.16,0.7});
@@ -247,6 +276,9 @@ local function draw_gui()
         imgui.Columns(1);
         imgui.PopStyleColor(4); -- Pop window styles
     end
+
+    window.is_minimized = imgui.IsWindowCollapsed();
+
     imgui.End();
 end
 
