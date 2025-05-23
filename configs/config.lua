@@ -1,31 +1,41 @@
-local config = {
-    show_gui = true,
-    enable_alerts = true,
-    enable_audio = true,
-    alert_threshold = 90,
-    audio_alert_threshold = 100,
-    auto_refresh_interval = 60, -- seconds
-    sort_by = 'completion', -- 'level', 'area', 'completion'
-    sort_ascending = false
-}
+-- config.lua
+local default_settings = {
+    show_gui = true;
+    enable_alerts = true;
+    enable_audio = true;
+    alert_threshold = 90;
+    audio_alert_threshold = 100;
+    auto_refresh_interval = 60; -- seconds
+    sort_by = 'completion'; -- 'level', 'area', 'completion'
+    sort_ascending = false;
+};
 
--- Helper function to get a setting
+local settings = require('settings');
+local config_data = settings.load(default_settings);  -- Only holds settings data
+
+-- Define a helper table to wrap logic around the config data
+local config = {};
+
 function config.get(key)
-    return config[key];
-end
+    return config_data[key];
+end;
 
--- Helper function to set a setting
 function config.set(key, value)
-    config[key] = value;
-end
+    config_data[key] = value;
+    settings.save();
+end;
 
--- Helper function to toggle a boolean setting
 function config.toggle(key)
-    if type(config[key]) == 'boolean' then
-        config[key] = not config[key];
-        return config[key];
-    end
+    if type(config_data[key]) == 'boolean' then
+        config_data[key] = not config_data[key];
+        settings.save();
+        return config_data[key];
+    end;
     return nil;
-end
+end;
 
-return config
+function config.raw()
+    return config_data;
+end;
+
+return config;

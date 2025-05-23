@@ -13,7 +13,7 @@ end
 
 -- Check and handle alerts for a venture
 function alert:check_venture(venture)
-    if not config.enable_alerts then
+    if not config.get('enable_alerts') then
         return;
     end
 
@@ -21,7 +21,7 @@ function alert:check_venture(venture)
     local area = venture:get_area();
     local location = venture:get_location();
 
-    if completion > config.alert_threshold then
+    if completion > config.get('alert_threshold') then
         local last = self.last_alerted_completion[area] or 0;
         if completion > last then
             local location_note = location ~= '' and string.format(" at %s", location) or "";
@@ -29,7 +29,7 @@ function alert:check_venture(venture)
                 string.format("%s is now %d%% complete%s!", area, completion, location_note)
             ));
 
-            if config.enable_audio and completion >= config.audio_alert_threshold then
+            if config.get('enable_audio') and completion >= config.get('audio_alert_threshold') then
                 self:play_sound('alert.wav');
             end
 

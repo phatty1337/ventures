@@ -17,7 +17,7 @@ function rows:draw_venture_row(venture)
 
     -- Completion
     local completion = venture:get_completion();
-    if completion >= config.alert_threshold then
+    if completion >= config.get('alert_threshold') then
         imgui.PushStyleColor(ImGuiCol_Text, { 1.0, 0.5, 0.0, 1.0 }); -- Orange
     else
         imgui.PushStyleColor(ImGuiCol_Text, { 0.5, 1.0, 0.5, 1.0 }); -- Green

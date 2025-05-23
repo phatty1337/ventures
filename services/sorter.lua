@@ -7,13 +7,13 @@ function sorter:sort(ventures)
     table.sort(ventures, function(a, b)
         local a_val, b_val;
 
-        if config.sort_by == 'level' then
+        if config.get('sort_by') == 'level' then
             a_val = tonumber(a:get_level_range():match("(%d+)-")) or 0;
             b_val = tonumber(b:get_level_range():match("(%d+)-")) or 0;
-        elseif config.sort_by == 'area' then
+        elseif config.get('sort_by') == 'area' then
             a_val = a:get_area():lower();
             b_val = b:get_area():lower();
-        elseif config.sort_by == 'completion' then
+        elseif config.get('sort_by') == 'completion' then
             a_val = a:get_completion();
             b_val = b:get_completion();
             if a_val == b_val then
@@ -23,7 +23,7 @@ function sorter:sort(ventures)
             end
         end
 
-        if config.sort_ascending then
+        if config.get('sort_ascending') then
             return a_val < b_val;
         else
             return a_val > b_val;
@@ -33,18 +33,13 @@ function sorter:sort(ventures)
     return ventures;
 end
 
--- Toggle sort direction
-function sorter:toggle_direction()
-    config.sort_ascending = not config.sort_ascending;
-end
-
 -- Set sort column
 function sorter:set_column(column)
-    if config.sort_by == column then
-        self:toggle_direction();
+    if config.get('sort_by') == column then
+        config.toggle('sort_ascending');
     else
-        config.sort_by = column;
-        config.sort_ascending = true;
+        config.set('sort_by', column);
+        config.set('sort_ascending', true);
     end
 end
 

@@ -36,21 +36,21 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
         elseif args[2]:lower() == 'settings' then
             if args[3] == nil then
                 print(chat.header(addon.name) .. chat.message('Current Settings:'));
-                print(chat.header(addon.name) .. ('- GUI: ' .. (config.show_gui and 'ON' or 'OFF')));
-                print(chat.header(addon.name) .. ('- Alerts: ' .. (config.enable_alerts and 'ON' or 'OFF')));
-                print(chat.header(addon.name) .. ('- Audio: ' .. (config.enable_audio and 'ON' or 'OFF')));
-                print(chat.header(addon.name) .. ('- Sort: ' .. config.sort_by .. ' ' .. (config.sort_ascending and 'Ascending' or 'Descending')));
+                print(chat.header(addon.name) .. ('- GUI: ' .. (config.get('show_gui') and 'ON' or 'OFF')));
+                print(chat.header(addon.name) .. ('- Alerts: ' .. (config.get('enable_alerts') and 'ON' or 'OFF')));
+                print(chat.header(addon.name) .. ('- Audio: ' .. (config.get('enable_audio') and 'ON' or 'OFF')));
+                print(chat.header(addon.name) .. ('- Sort: ' .. config.get('sort_by') .. ' ' .. (config.get('sort_ascending') and 'Ascending' or 'Descending')));
             else
                 local setting = args[3]:lower();
                 if setting == 'gui' then
                     config.toggle('show_gui');
-                    print(chat.header(addon.name) .. chat.message('GUI toggled ' .. (config.show_gui and 'ON' or 'OFF')));
+                    print(chat.header(addon.name) .. chat.message('GUI toggled ' .. (config.get('show_gui') and 'ON' or 'OFF')));
                 elseif setting == 'alerts' then
                     config.toggle('enable_alerts');
-                    print(chat.header(addon.name) .. chat.message('Alerts toggled ' .. (config.enable_alerts and 'ON' or 'OFF')));
+                    print(chat.header(addon.name) .. chat.message('Alerts toggled ' .. (config.get('enable_alerts') and 'ON' or 'OFF')));
                 elseif setting == 'audio' then
                     config.toggle('enable_audio');
-                    print(chat.header(addon.name) .. chat.message('Audio alerts toggled ' .. (config.enable_audio and 'ON' or 'OFF')));
+                    print(chat.header(addon.name) .. chat.message('Audio alerts toggled ' .. (config.get('enable_audio') and 'ON' or 'OFF')));
                 else
                     print(chat.header(addon.name) .. chat.error('Unknown settings option: ' .. setting));
                 end
@@ -131,7 +131,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
     if zoning and not zone_loaded and id == 0x001F then
         zone_loaded = true;
         zoning = false;
-        auto_refresh_timer = time.now() - config.auto_refresh_interval + 10;
+        auto_refresh_timer = time.now() - config.get('auto_refresh_interval') + 10;
         return;
     end
 end);
@@ -150,7 +150,7 @@ ashita.events.register('d3d_present', 'ventures_present_cb', function()
         return;
     end
 
-    if time.has_elapsed(auto_refresh_timer, config.auto_refresh_interval) then
+    if time.has_elapsed(auto_refresh_timer, config.get('auto_refresh_interval')) then
         auto_refresh_timer = time.now();
         parser:send_ventures_command();
     end

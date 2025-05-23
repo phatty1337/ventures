@@ -9,7 +9,7 @@ local ui = {};
 
 -- Draw main window
 function ui:draw(ventures)
-    if not config.show_gui then
+    if not config.get('show_gui') then
         return;
     end
 
