@@ -31,8 +31,8 @@ function parser:parse_exp_areas(lines)
     end
 
     if exp_text == '' then
-        print(chat.header('ventures') .. chat.error('EXP Areas section not found.'));
-        return {};
+        -- print(chat.header('ventures') .. chat.error('EXP Areas section not found.'));
+        return self.parsed_ventures;
     end
 
     -- Clear old results
