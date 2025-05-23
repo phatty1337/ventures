@@ -16,6 +16,11 @@ function sorter:sort(ventures)
         elseif config.sort_by == 'completion' then
             a_val = a:get_completion();
             b_val = b:get_completion();
+            if a_val == b_val then
+                -- Secondary: area name
+                a_val = a:get_area():lower();
+                b_val = b:get_area():lower();
+            end
         end
 
         if config.sort_ascending then
