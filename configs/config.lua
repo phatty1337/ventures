@@ -6,8 +6,11 @@ local default_settings = {
     alert_threshold = 90;
     audio_alert_threshold = 100;
     auto_refresh_interval = 60; -- seconds
+    selected_sound = 0;
     sort_by = 'completion'; -- 'level', 'area', 'completion'
     sort_ascending = false;
+    debug = false;
+    show_config_gui = false;
 };
 
 local settings = require('settings');

@@ -5,6 +5,23 @@ local alert = {
     last_alerted_completion = {}
 };
 
+-- Preload sounds
+local function load_sounds()
+    local folder = AshitaCore:GetInstallPath() .. '/addons/' .. addon.name .. '/sounds/'
+    if not ashita.fs.exists(folder) then return {}, {} end
+
+    local files = ashita.fs.get_directory(folder, '.*\\.wav') or {}
+    local full = T{}
+
+    for _, f in ipairs(files) do
+        full:append(f)
+    end
+
+    return full
+end
+
+local sound_files = load_sounds()
+
 -- Play alert sound
 function alert:play_sound(sound)
     local fullpath = string.format('%s\\sounds\\%s', addon.path, sound);
@@ -30,7 +47,7 @@ function alert:check_venture(venture)
             ));
 
             if config.get('enable_audio') and completion >= config.get('audio_alert_threshold') then
-                self:play_sound('alert.wav');
+                self:play_sound(sound_files[config.get('selected_sound')]);
             end
 
             self.last_alerted_completion[area] = completion;

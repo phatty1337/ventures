@@ -1,6 +1,6 @@
 addon.name    = 'ventures';
 addon.author  = 'Commandobill';
-addon.version = '1.2.6';
+addon.version = '1.3';
 addon.desc    = 'Capture and parse EXP Areas cleanly from !ventures response';
 
 require('common');
@@ -11,6 +11,7 @@ local config = require('configs.config');
 local parser = require('services.parser');
 local sorter = require('services.sorter');
 local alert = require('services.alert');
+local config_ui = require('services.config_ui')
 local ui = require('ui.window');
 local time = require('utils.time');
 
@@ -51,11 +52,16 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
                 elseif setting == 'audio' then
                     config.toggle('enable_audio');
                     print(chat.header(addon.name) .. chat.message('Audio alerts toggled ' .. (config.get('enable_audio') and 'ON' or 'OFF')));
+                elseif setting == 'debug' then
+                    config.toggle('debug');
+                    print(chat.header(addon.name) .. chat.message('Debug toggled ' .. (config.get('debug') and 'ON' or 'OFF')));
                 else
                     print(chat.header(addon.name) .. chat.error('Unknown settings option: ' .. setting));
                 end
             end
             return true;
+        elseif args[2]:lower() == 'config' then
+            config.toggle('show_config_gui');
         end
     end
     return false;
@@ -141,6 +147,7 @@ ashita.events.register('d3d_present', 'ventures_present_cb', function()
     local ventures = parser:get_ventures();
     ventures = sorter:sort(ventures);
     ui:draw(ventures);
+    config_ui:draw();
 
     if zoning and not zone_loaded and time.has_elapsed(zone_entry_time, 30) then
         zoning = false;
@@ -165,7 +172,7 @@ ashita.events.register('d3d_present', 'ventures_present_cb', function()
 end);
 
 -- Startup message
-print(chat.header(addon.name) .. chat.success('Loaded. Type /ventures settings to configure.'));
+print(chat.header(addon.name) .. chat.success('Loaded. Type /ventures config to configure.'));
 
 -- Auto-populate data on load
 parser:send_ventures_command();
