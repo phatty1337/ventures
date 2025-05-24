@@ -58,7 +58,7 @@ function config_ui:draw()
 
         imgui.PushItemWidth(200);
         if imgui.Combo("Select Sound", combo, combo_items, #sound_labels) then
-            config.set('selected_sound', combo[1] + 1);
+            config.set('selected_sound', combo[1]);
         end
         imgui.PopItemWidth();
 
