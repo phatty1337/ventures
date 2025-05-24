@@ -58,7 +58,7 @@ function config_ui:draw()
 
         imgui.PushItemWidth(200);
         if imgui.Combo("Select Sound", combo, combo_items, #sound_labels) then
-            config.set('selected_sound', combo[1] + 1);
+            config.set('selected_sound', combo[1]);
         end
         imgui.PopItemWidth();
 
@@ -68,13 +68,13 @@ function config_ui:draw()
                 "%s\\addons\\%s\\sounds\\%s",
                 AshitaCore:GetInstallPath(),
                 addon.name,
-                sound_files[combo[1] + 1]
+                sound_files[combo[1]]
             );
             ashita.misc.play_sound(path);
         end
 
-        if sound_files[combo[1] + 1] then
-            imgui.Text(string.format("File: %s", sound_files[combo[1] + 1]));
+        if sound_files[combo[1]] then
+            imgui.Text(string.format("File: %s", sound_files[combo[1]]));
         end
 
     end
