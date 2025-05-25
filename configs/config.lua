@@ -1,5 +1,5 @@
 -- config.lua
-local default_settings = {
+local default_settings = T{
     show_gui = true;
     enable_alerts = true;
     enable_audio = true;
