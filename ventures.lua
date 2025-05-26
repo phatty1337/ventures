@@ -61,7 +61,6 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
             return true;
         elseif args[2]:lower() == 'config' then
             config.toggle('show_config_gui');
-        end
         elseif args[2]:lower() == 'force' then
             parser:send_ventures_command();
             return true;
