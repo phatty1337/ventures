@@ -32,8 +32,7 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
 
     if cmd == '/ventures' then
         if args[2] == nil then
-            parser:send_ventures_command();
-            return true;
+            config.toggle('show_config_gui');
         elseif args[2]:lower() == 'settings' then
             if args[3] == nil then
                 print(chat.header(addon.name) .. chat.message('Current Settings:'));
@@ -62,6 +61,10 @@ ashita.events.register('command', 'ventures_command_cb', function(e)
             return true;
         elseif args[2]:lower() == 'config' then
             config.toggle('show_config_gui');
+        end
+        elseif args[2]:lower() == 'force' then
+            parser:send_ventures_command();
+            return true;
         end
     end
     return false;

@@ -25,8 +25,9 @@
 
 | Command | Description |
 |--------|-------------|
-| `/ventures` | Immediately fetches the latest Venture data |
+| `/ventures` | Generates a popup to configure your settings |
 | `/ventures config` | Generates a popup to configure your settings |
+| `/ventures force` | Immediately fetches the latest Venture data |
 | `/ventures settings` | Shows the current GUI and Alert settings |
 | `/ventures settings gui` | Toggles the GUI display ON/OFF |
 | `/ventures settings alerts` | Toggles command-line alerts ON/OFF |
