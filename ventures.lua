@@ -100,8 +100,10 @@ ashita.events.register('text_in', 'ventures_textin_cb', function(e)
 
     if mode == 9 then
         e.blocked = true;
+        local entry = { mode = mode, message = e.message };
+        table.insert(parser.capture_lines, entry);
 
-        if string.find(e.message, "^Mining:") then
+        if string.find(e.message, "60-69:") then
             parser.capture_active = false;
             local ventures = parser:parse_exp_areas(parser.capture_lines);
             for _, venture in ipairs(ventures) do
@@ -110,8 +112,7 @@ ashita.events.register('text_in', 'ventures_textin_cb', function(e)
             return;
         end
 
-        local entry = { mode = mode, message = e.message };
-        table.insert(parser.capture_lines, entry);
+        
     end
 
     if #parser.capture_lines >= parser.max_lines then
@@ -132,6 +133,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
         zoning = true;
         zone_loaded = false;
         zone_entry_time = time.now();
+        auto_refresh_timer = time.now();
         return;
     end
 
@@ -139,7 +141,7 @@ ashita.events.register('packet_in', 'packet_in_cb', function(e)
     if zoning and not zone_loaded and id == 0x001F then
         zone_loaded = true;
         zoning = false;
-        auto_refresh_timer = time.now() - config.get('auto_refresh_interval') + 10;
+        auto_refresh_timer = time.now();
         return;
     end
 end);
@@ -151,7 +153,7 @@ ashita.events.register('d3d_present', 'ventures_present_cb', function()
     ui:draw(ventures);
     config_ui:draw();
 
-    if zoning and not zone_loaded and time.has_elapsed(zone_entry_time, 30) then
+    if zoning and not zone_loaded and time.has_elapsed(zone_entry_time, config.get('auto_refresh_interval')) then
         zoning = false;
         zone_loaded = true;
         print(chat.header(addon.name) .. chat.warning('Fallback: Zone timer expired. Proceeding.'));
