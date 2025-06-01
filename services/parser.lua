@@ -53,6 +53,7 @@ function parser:parse_exp_areas(lines)
         local vnm_equipment = nil;
         local vnm_element = nil;
         local vnm_crest = nil;
+        local vnm_notes = nil;
         local vnm_zone = vnm_data[area];
 
         if vnm_zone then
@@ -62,6 +63,7 @@ function parser:parse_exp_areas(lines)
                     vnm_equipment = vnm.equipment;
                     vnm_element = vnm.element;
                     vnm_crest = vnm.crest;
+                    vnm_notes = vnm.notes;
                     break;
                 end
             end
@@ -76,6 +78,7 @@ function parser:parse_exp_areas(lines)
                 equipment = vnm_equipment or "",
                 element = vnm_element or "",
                 crest = vnm_crest or ""
+                notes = vnm_notes and string.format("(%s)", vnm_notes) or ""
             };
             local v = existing[level_range]
             if v then

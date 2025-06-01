@@ -48,6 +48,27 @@ function rows:draw_venture_row(venture)
     imgui.PushStyleColor(ImGuiCol_Text, time_color);
     imgui.TextUnformatted(indicator);
     imgui.PopStyleColor();
+
+    if imgui.IsItemHovered() then
+        local minutes
+        if not venture.last_increment_time or venture.last_increment_time == 0 then
+            minutes = nil
+        else
+            minutes = math.floor((os.time() - venture.last_increment_time) / 60)
+        end
+        imgui.BeginTooltip()
+        if not minutes then
+            imgui.TextUnformatted("Last progress: unknown")
+        elseif minutes == 0 then
+            imgui.TextUnformatted("Last progress: just now")
+        elseif minutes == 1 then
+            imgui.TextUnformatted("Last progress: 1 minute ago")
+        else
+            imgui.TextUnformatted("Last progress: " .. minutes .. " minutes ago")
+        end
+        imgui.EndTooltip()
+    end
+    
     imgui.SameLine(0, 0);
     imgui.TextUnformatted('  '); -- Two spaces
     imgui.SameLine(0, 0);
@@ -61,8 +82,14 @@ function rows:draw_venture_row(venture)
     imgui.PopStyleColor();
     imgui.NextColumn();
 
-    -- Location
-    imgui.Text(venture:get_location());
+    -- Location and Notes
+    local location = venture:get_location()
+    local notes = venture:get_notes()
+    if notes and notes ~= "" then
+        imgui.Text(location .. " - " .. notes)
+    else
+        imgui.Text(location)
+    end
     imgui.NextColumn();
 end
 
